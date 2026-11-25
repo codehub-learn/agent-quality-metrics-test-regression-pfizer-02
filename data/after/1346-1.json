@@ -1,0 +1,86 @@
+{
+  "run": "1346-1",
+  "number": 1346,
+  "issue": {
+    "number": 1346,
+    "title": "Different mocks are used for @Mock and @InjectMock in the same test class with JUnit 5 extension",
+    "body": "I've been playing with the new JUnit 5 support in Mockito 2.17.0. I have found that with `@Mock` and `@InjectMocks` used in the same test class different mocks are injected. I would expect to have the same mock reused (as it works with JUnit 4 or manual `@Mock` initialization).\n\nSample code:\n```\n@ExtendWith(MockitoExtension.class)\npublic class SpaceShip5BugMiniTest {\n\n    @InjectMocks\n    private SpaceShip spaceShip;\n\n    @Mock\n    private TacticalStation tacticalStation;\n\n    @Test\n    public void shouldInjectMocks() {\n        assertThat(tacticalStation).isNotNull();\n        assertThat(spaceShip.getTacticalStation()).isEqualTo(tacticalStation);  \n        //Bug ↑ - different mocks are use in @Mock and @InjectMock\n    }\n}\n```\n\nError message:\n```\norg.opentest4j.AssertionFailedError: \nExpecting:\n <\"tacticalStation (TacticalStation$MockitoMock$991606095@61d6015a)\">\nto be equal to:\n <\"tacticalStation (TacticalStation$MockitoMock$991606095@b62d79)\">\nbut was not.\nExpected :tacticalStation\nActual   :tacticalStation\n```\n\nThe minimal (non-)working example is available [here](https://github.com/szpak/code-examples-and-poc/tree/mockito2junit5-bug/mockito2-junit5).\n\n@TimvdLippe Do you have an idea what could be wrong?\n\nMockito 2.17.0 (2.17.1 is not being released due to (https://github.com/mockito/shipkit/issues/679), junit-jupiter 5.1.0, OpenJDK 1.8.0_161, Linux.\n\n### Checklist:\n - [x] The mockito message in the stacktrace have useful information, but it didn't help\n - [x] The problematic code (if that's possible) is copied here;\n       Note that some configuration are impossible to mock via Mockito\n - [x] Provide versions (mockito / jdk / os / any other relevant information)\n - [x] Provide a [Short, Self Contained, Correct (Compilable), Example](http://sscce.org) of the issue\n       (same as any question on stackoverflow.com)\n - [x] Read the [contributing guide](https://github.com/mockito/mockito/blob/master/.github/CONTRIBUTING.md)\n",
+    "created_at": "2018-03-25T12:31:24Z"
+  },
+  "steps": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "Get-Content issues\\1346.json -Raw; Write-Output \"---\"; Get-Content issue-index.tsv | Measure-Object -Line | Select-Object -ExpandProperty Lines",
+        "description": "Read issue 1346 and index size"
+      },
+      "result": "",
+      "error": true
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/1346.json"
+      },
+      "result": "{\n  \"number\": 1346,\n  \"title\": \"Different mocks are used for @Mock and @InjectMock in the same test class with JUnit 5 extension\",\n  \"body\": \"I've been playing with the new JUnit 5 support in Mockito 2.17.0. I have found that with `@Mock` and `@InjectMocks` used in the same test class different mock [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "InjectMocks|MockitoExtension",
+        "paths": [
+          "mockito"
+        ],
+        "output_mode": "files_with_matches",
+        "glob": "*Extension*.java"
+      },
+      "result": "mockito\\mockito-extensions\\mockito-junit-jupiter\\src\\main\\java\\org\\mockito\\junit\\jupiter\\MockitoExtension.java",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)(InjectMock|JUnit ?5|extension|different mock)",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "[grep content: 94 matches across 1 file(s); delimited groups]\n\nissue-index.tsv (94 match(es)):\n  6: 70\tMissing @Mock for @InjectMocks silently fails when it cannot find the dependency\n  51: 135\tIntroduce PluginSwitch extension point\n  73: 169\t@InjectMocks and @Spy on same field should cause MockitoE [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-extensions/mockito-junit-jupiter/src/main/java/org/mockito/junit/jupiter/MockitoExtension.java"
+      },
+      "result": "/*\n * Copyright (c) 2018 Mockito contributors\n * This program is made available under the terms of the MIT License.\n */\npackage org.mockito.junit.jupiter;\n\nimport static org.junit.jupiter.api.extension.ExtensionContext.Namespace.create;\nimport static org.junit.platform.commons.support.AnnotationSupp [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "content",
+        "-n": true,
+        "paths": [
+          "mockito/mockito-core/src/main/java/org/mockito/internal/configuration/injection"
+        ],
+        "pattern": "class |public void process|injectMocks"
+      },
+      "result": "[grep content: 54 matches across 11 file(s) under mockito/mockito-core/src/main/java/org/mockito/internal/configuration/injection; delimited groups]\n\nMockInjection.java (3 match(es)):\n  19:  * <p>Allow the user of this class to configure the way the injection of mocks will happen.\n  21: public final [cut]",
+      "error": false
+    }
+  ],
+  "final": "",
+  "final_is_json": false
+}

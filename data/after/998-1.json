@@ -1,0 +1,147 @@
+{
+  "run": "998-1",
+  "number": 998,
+  "issue": {
+    "number": 998,
+    "title": "Mock URL.class",
+    "body": "Hi \nAs per the update for mockito 2.2.x it supports mocking a final class, but when i try to mock the URL.class i get the values of the object null in the debug mode. I am using mockito-core-2.2.16 with java 7. I am not sure what is wrong with my code.\n\n               URL u = mock(URL.class);\n\t        HttpsURLConnection huc = mock(HttpsURLConnection.class);\n\t        when(new URL(anyString())).thenReturn(u);\n\t        when(u.openConnection()).thenReturn(huc);\n\nThanks\nShreyas\n![mock](https://cloud.githubusercontent.com/assets/19372060/24191956/71109e84-0f13-11e7-9442-7ca4c5346260.PNG)\n\n\n\n",
+    "created_at": "2017-03-22T09:53:20Z"
+  },
+  "steps": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "Get-Content -Raw issues\\998.json; Write-Output \"---\"; Get-Content -TotalCount 5 issue-index.tsv; Write-Output \"---\"; (Get-ChildItem mockito -Recurse -File -Filter *.java | Measure-Object).Count",
+        "description": "Read issue 998 and index"
+      },
+      "result": "",
+      "error": true
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/998.json"
+      },
+      "result": "{\n  \"number\": 998,\n  \"title\": \"Mock URL.class\",\n  \"body\": \"Hi \\nAs per the update for mockito 2.2.x it supports mocking a final class, but when i try to mock the URL.class i get the values of the object null in the debug mode. I am using mockito-core-2.2.16 with java 7. I am not sure what is wrong w [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "constructor|new Foo\\(\\)|mockConstruction",
+        "paths": [
+          "mockito"
+        ],
+        "-i": true,
+        "output_mode": "files_with_matches",
+        "head_limit": 15
+      },
+      "result": "mockito\\doc\\release-notes\\official.md\nmockito\\mockito-integration-tests\\programmatic-tests\\src\\test\\java\\org\\mockito\\ProgrammaticMockMakerTest.java\nmockito\\mockito-core\\src\\testFixtures\\java\\org\\mockitoutil\\SimplePerRealmReloadingClassLoader.java\nmockito\\mockito-integration-tests\\module-tests\\src\\te [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-i": true,
+        "output_mode": "content",
+        "-n": true,
+        "pattern": "constructor|\\burl\\b|final class|mock.*new |new.*mock",
+        "paths": [
+          "issue-index.tsv"
+        ]
+      },
+      "result": "[grep content: 67 matches across 1 file(s); delimited groups]\n\nissue-index.tsv (67 match(es)):\n  11: 75\tNew \"serializable\" parameter of @Mock annotation\n  14: 78\tDefining a new mocked method invokes previously defined one\n  17: 86\tNew lightweight, stub-only mocks for scenarios where high performance [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "content",
+        "-n": true,
+        "head_limit": 8,
+        "pattern": "public static .* mockConstruction\\(|class MockedConstruction",
+        "paths": [
+          "mockito/mockito-core/src/main/java"
+        ]
+      },
+      "result": "mockito/mockito-core/src/main/java\\org\\mockito\\Mockito.java:2871:    public static <T> MockedConstruction<T> mockConstruction(Class<T> classToMock) {\nmockito/mockito-core/src/main/java\\org\\mockito\\Mockito.java:2886:    public static <T> MockedConstruction<T> mockConstruction(\nmockito/mockito-core/sr [cut]",
+      "error": false
+    },
+    {
+      "tool": "Glob",
+      "input": {
+        "pattern": "**/{answer-draft,SKILL}*.md",
+        "paths": [
+          ".agent-config"
+        ]
+      },
+      "result": "Error: rg: .agent-config: IO error for operation on .agent-config: The system cannot find the file specified. (os error 2)",
+      "error": true
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "answer-draft"
+      },
+      "result": "Skill \"answer-draft\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/Mockito.java",
+        "view_range": [
+          2820,
+          2890
+        ]
+      },
+      "result": "     * @param instance the singleton instance to mock.\n     * @param mockSettings the mock settings to use.\n     * @param <T> the type of the singleton.\n     * @return mock controller\n     * @since 5.22.0\n     */\n    public static <T> MockedSingleton<T> mockSingleton(T instance, MockSettings mockSet [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-n": true,
+        "output_mode": "content",
+        "paths": [
+          "mockito/mockito-core/src/main/java/org/mockito/Mockito.java"
+        ],
+        "pattern": "Mocking construction|mockConstruction\\(|final classes|cannot stub|constructor",
+        "head_limit": 15
+      },
+      "result": "mockito/mockito-core/src/main/java/org/mockito/Mockito.java:87: *      <a href=\"#23\">23. Automatic instantiation of <code>&#064;Spies</code>, <code>&#064;InjectMocks</code> and constructor injection goodness (Since 1.9.0)</a><br/>\nmockito/mockito-core/src/main/java/org/mockito/Mockito.java:159: * wh [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/Mockito.java",
+        "view_range": [
+          1714,
+          1745
+        ]
+      },
+      "result": " *\n * <h3 id=\"49\">49. <a class=\"meaningful_link\" href=\"#mocked_construction\" name=\"mocked_construction\">Mocking object construction</a> (since 3.5.0)</h3>\n *\n * When using the <a href=\"#0.2\">inline mock maker</a>, it is possible to generate mocks on constructor invocations within the current\n * thre [cut]",
+      "error": false
+    },
+    {
+      "tool": "Write",
+      "input": {
+        "path": ".triage-998-scratch.txt",
+        "file_text": "scratch: none needed; reply returned inline. Safe to delete.\n"
+      },
+      "result": "",
+      "error": true
+    }
+  ],
+  "final": "{\"number\": 998, \"label\": \"question\", \"route\": \"answer\", \"related\": [2588, 2342, 2339], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/Mockito.java\"], \"reply\": \"Hi Shreyas, Mockito cannot stub a constructor call such as when(new URL(anyString())).thenReturn(u). The 'new' expression is not a method call on a mock, so there is nothing to stub. Mocking object construction is available since Mockito 3.5.0 with the inline mock maker (mockito-inline). Mockito 2.2.16 does not have it. Wrap the code in try (MockedConstruction<URL> mocked = mockConstruction(URL.class)) { ... } and stub the object created inside that block, as in the example in section 49, 'Mocking object construction', of the Mockito class Javadoc in org.mockito.Mockito.\"}",
+  "final_is_json": true
+}

@@ -1,0 +1,78 @@
+{
+  "run": "1514-3",
+  "number": 1514,
+  "issue": {
+    "number": 1514,
+    "title": "Mockito remains in unfinished stubbing state if a stubbing fails",
+    "body": "If one of `doThrow` instructions failed due to InstantiationError, Mockito remains in \"unfinished stubbing\" state and can no longer mock anything.\n\nI had this issue in a single JUnit 4 test, but the fact that Mockito remained in \"unfinished stubbing\" state used to result in _all_ tests being marked as failed (I couldn't reproduce the last effect with the latest Mockito neither in JUnit 4 nor with JUnit 5 now, so the issue is applicable to a single test invocation only).\n\n```java\nimport java.util.List;\nimport org.junit.jupiter.api.RepeatedTest;\nimport org.junit.jupiter.api.RepetitionInfo;\nimport org.mockito.Mockito;\n\nclass UninstantiableTest {\n\n  @RepeatedTest(2)\n  void tryThrow01(RepetitionInfo i) {\n    if (i.getCurrentRepetition() == 1) {\n      // Stub using uninstantiable exception.\n      try {\n        List mock = Mockito.mock(List.class);\n\n        Mockito.doThrow(UninstantiableException.class).when(mock).clear();\n      } catch (InstantiationError expected) {\n        // Get a j.l.InstantiationError.\n      }\n    }\n\n    // Try to stub another mock, this time using a valid exception type.\n    {\n      List mock = Mockito.mock(List.class);\n\n      // The following operation results in \"UnfinishedStubbing\"\n      Mockito.doThrow(RuntimeException.class).when(mock).clear();\n    }\n  }\n\n  abstract static class UninstantiableException extends RuntimeException {}\n}\n```\n\nMockito version 2.23.0\n\n\ncheck that\n\n - [x] The mockito message in the stacktrace have useful information, but it didn't help\n - [x] The problematic code (if that's possible) is copied here;\n       Note that some configuration are impossible to mock via Mockito\n - [x] Provide versions (mockito / jdk / os / any other relevant information)\n - [x] Provide a [Short, Self Contained, Correct (Compilable), Example](http://sscce.org) of the issue\n       (same as any question on stackoverflow.com)\n - [x] Read the [contributing guide](https://github.com/mockito/mockito/blob/master/.github/CONTRIBUTING.md)\n\n\n",
+    "created_at": "2018-10-09T18:09:07Z"
+  },
+  "steps": [
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/1514.json"
+      },
+      "result": "{\n  \"number\": 1514,\n  \"title\": \"Mockito remains in unfinished stubbing state if a stubbing fails\",\n  \"body\": \"If one of `doThrow` instructions failed due to InstantiationError, Mockito remains in \\\"unfinished stubbing\\\" state and can no longer mock anything.\\n\\nI had this issue in a single JUnit 4 t [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "repro-check"
+      },
+      "result": "Skill \"repro-check\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "UnfinishedStubbing|validateState|resetOngoingStubbing|class ThrowsException|class ThrowsExceptionClass",
+        "paths": [
+          "mockito"
+        ],
+        "output_mode": "files_with_matches"
+      },
+      "result": "[grep-paths: 29 path(s) under mockito; grouped by directory]\n\nmockito/mockito-core/ (28 path(s))\n  src/main/java/org/mockito/exceptions/misusing/UnfinishedStubbingException.java\n  src/main/java/org/mockito/internal/MockedStaticImpl.java\n  src/main/java/org/mockito/internal/MockitoCore.java\n  src/mai [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "doThrow|class |newInstance|InstantiationError|Throwable",
+        "paths": [
+          "mockito/mockito-core/src/main/java/org/mockito/internal/stubbing/answers/ThrowsExceptionForClassType.java",
+          "mockito/mockito-core/src/main/java/org/mockito/internal/stubbing/StubberImpl.java"
+        ],
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\stubbing\\answers\\ThrowsExceptionForClassType.java:12:public class ThrowsExceptionForClassType extends AbstractThrowsException implements Serializable {\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\stubbing\\answers\\ThrowsExceptionForC [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "unfinished|UnfinishedStubbing|InstantiationError",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "-i": true,
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "issue-index.tsv:71:166\tUnfinishedStubbingException when thenReturn contains mock which is used in when\nissue-index.tsv:602:1183\tUnfinishedVerificationException with Kotlin after updating to 2.9.0\nissue-index.tsv:677:1318\tConsecutive doNothing() on spies lead to UnfinishedStubbingException\nissue-inde [cut]",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 1514, \"label\": \"bug\", \"route\": \"repro-check\", \"related\": [1636, 1318], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/stubbing/StubberImpl.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/stubbing/answers/ThrowsExceptionForClassType.java\"], \"reply\": \"Thank you for the report. It is reproducible as written: the snippet targets Mockito 2.23.0, shows the setup, and describes the expected behaviour (later stubbing works) and the actual behaviour (UnfinishedStubbingException after a failed doThrow with an uninstantiable exception class). The stubbing path is in org.mockito.internal.stubbing.StubberImpl (doThrow(Class)), and the exception class is built by org.mockito.internal.stubbing.answers.ThrowsExceptionForClassType. We have not checked the full stack trace yet, so a complete trace from your run would help.\"}",
+  "final_is_json": true
+}

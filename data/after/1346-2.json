@@ -1,0 +1,80 @@
+{
+  "run": "1346-2",
+  "number": 1346,
+  "issue": {
+    "number": 1346,
+    "title": "Different mocks are used for @Mock and @InjectMock in the same test class with JUnit 5 extension",
+    "body": "I've been playing with the new JUnit 5 support in Mockito 2.17.0. I have found that with `@Mock` and `@InjectMocks` used in the same test class different mocks are injected. I would expect to have the same mock reused (as it works with JUnit 4 or manual `@Mock` initialization).\n\nSample code:\n```\n@ExtendWith(MockitoExtension.class)\npublic class SpaceShip5BugMiniTest {\n\n    @InjectMocks\n    private SpaceShip spaceShip;\n\n    @Mock\n    private TacticalStation tacticalStation;\n\n    @Test\n    public void shouldInjectMocks() {\n        assertThat(tacticalStation).isNotNull();\n        assertThat(spaceShip.getTacticalStation()).isEqualTo(tacticalStation);  \n        //Bug ↑ - different mocks are use in @Mock and @InjectMock\n    }\n}\n```\n\nError message:\n```\norg.opentest4j.AssertionFailedError: \nExpecting:\n <\"tacticalStation (TacticalStation$MockitoMock$991606095@61d6015a)\">\nto be equal to:\n <\"tacticalStation (TacticalStation$MockitoMock$991606095@b62d79)\">\nbut was not.\nExpected :tacticalStation\nActual   :tacticalStation\n```\n\nThe minimal (non-)working example is available [here](https://github.com/szpak/code-examples-and-poc/tree/mockito2junit5-bug/mockito2-junit5).\n\n@TimvdLippe Do you have an idea what could be wrong?\n\nMockito 2.17.0 (2.17.1 is not being released due to (https://github.com/mockito/shipkit/issues/679), junit-jupiter 5.1.0, OpenJDK 1.8.0_161, Linux.\n\n### Checklist:\n - [x] The mockito message in the stacktrace have useful information, but it didn't help\n - [x] The problematic code (if that's possible) is copied here;\n       Note that some configuration are impossible to mock via Mockito\n - [x] Provide versions (mockito / jdk / os / any other relevant information)\n - [x] Provide a [Short, Self Contained, Correct (Compilable), Example](http://sscce.org) of the issue\n       (same as any question on stackoverflow.com)\n - [x] Read the [contributing guide](https://github.com/mockito/mockito/blob/master/.github/CONTRIBUTING.md)\n",
+    "created_at": "2018-03-25T12:31:24Z"
+  },
+  "steps": [
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/1346.json"
+      },
+      "result": "{\n  \"number\": 1346,\n  \"title\": \"Different mocks are used for @Mock and @InjectMock in the same test class with JUnit 5 extension\",\n  \"body\": \"I've been playing with the new JUnit 5 support in Mockito 2.17.0. I have found that with `@Mock` and `@InjectMocks` used in the same test class different mock [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "^1346\\b|^1346\\t",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "output_mode": "content"
+      },
+      "result": "issue-index.tsv:1346\tDifferent mocks are used for @Mock and @InjectMock in the same test class with JUnit 5 extension",
+      "error": false
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "repro-check"
+      },
+      "result": "Skill \"repro-check\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "content",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "pattern": "(?i)inject|junit|extension"
+      },
+      "result": "[grep content: 159 matches across 1 file(s) under ; delimited groups]\n\nissue-index.tsv (159 match(es)):\n   70\tMissing @Mock for @InjectMocks silently fails when it cannot find the dependency\n   96\tDocument minimum JUnit requirement for MockitoJUnitRule\n   124\tConcise way to collect multiple verify f [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "files_with_matches",
+        "paths": [
+          "mockito"
+        ],
+        "pattern": "class InjectingAnnotationEngine|class MockitoExtension"
+      },
+      "result": "mockito\\mockito-extensions\\mockito-junit-jupiter\\src\\main\\java\\org\\mockito\\junit\\jupiter\\MockitoExtension.java\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\configuration\\InjectingAnnotationEngine.java",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "content",
+        "paths": [
+          "mockito/mockito-extensions/mockito-junit-jupiter/src/main/java/org/mockito/junit/jupiter/MockitoExtension.java",
+          "mockito/mockito-core/src/main/java/org/mockito/internal/configuration/InjectingAnnotationEngine.java"
+        ],
+        "pattern": "public class|public void process|public void injectMocks|beforeEach|InjectMocks|initMocks",
+        "-n": true
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\configuration\\InjectingAnnotationEngine.java:17:import org.mockito.internal.configuration.injection.scanner.InjectMocksScanner;\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\configuration\\InjectingAnnotationEngine.java:24:public class [cut]",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 1346, \"label\": \"bug\", \"route\": \"repro-check\", \"related\": [1912, 1437], \"evidence\": [\"mockito/mockito-extensions/mockito-junit-jupiter/src/main/java/org/mockito/junit/jupiter/MockitoExtension.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/configuration/InjectingAnnotationEngine.java\"], \"reply\": \"Thanks for the report. The report is reproducible as written: it gives the Mockito version (2.17.0), a short test class, the expected behaviour (the same mock is injected into @InjectMocks as the @Mock field) and the actual behaviour (a different mock instance is injected), with the assertion error. The behaviour lives in MockitoExtension in mockito-junit-jupiter, whose beforeEach calls initMocks on the test instance, and in InjectingAnnotationEngine in mockito-core, which performs the injection.\"}",
+  "final_is_json": true
+}

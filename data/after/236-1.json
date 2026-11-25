@@ -1,0 +1,91 @@
+{
+  "run": "236-1",
+  "number": 236,
+  "issue": {
+    "number": 236,
+    "title": "nicer textual printing of typed parameters",
+    "body": "When matchers fail but yield the same toString(), Mockito prints extra type information. However, the type information is awkwardly printed for Strings. I've encountered this issue while working on removing hard dependency to hamcrest.\n\n```\n//current:\nsomeMethod(1, (Integer) 2);\nsomeOther(1, \"(String) 2\");\n//desired:\nsomeOther(1, (String) \"2\");\n```\n",
+    "created_at": "2015-06-20T20:19:32Z"
+  },
+  "steps": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "Get-Content -Raw issues\\236.json; Write-Output \"---\"; Get-Content issue-index.tsv | Select-String -Pattern 'mock|verif|stub|spy|argument|matcher' | Select-Object -First 60",
+        "description": "Read issue 236 and search related index entries"
+      },
+      "result": "",
+      "error": true
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/236.json"
+      },
+      "result": "{\n  \"number\": 236,\n  \"title\": \"nicer textual printing of typed parameters\",\n  \"body\": \"When matchers fail but yield the same toString(), Mockito prints extra type information. However, the type information is awkwardly printed for Strings. I've encountered this issue while working on removing hard d [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)typed|type information|toString|print|describe|hamcrest|\\(String\\)",
+        "paths": "issue-index.tsv",
+        "output_mode": "content",
+        "-n": true,
+        "head_limit": 40
+      },
+      "result": "[grep content: 27 matches across 1 file(s) under ; delimited groups]\n\nissue-index.tsv (27 match(es)):\n  65: 154\tstop depending on hamcrest internally\n  74: 172\tUpdate hamcrest-core to version 1.3\n  115: 231\tUpgrade to Hamcrest 1.3 in pom\n  117: 236\tnicer textual printing of typed parameters\n  167: 3 [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)class (ArgumentMatcher|Equals|ArgumentMatcherStringDescription|Describe|Printer|Mockito)|appendTo|describeTo|toStringWithType|Object\\.class|getClass\\(\\)\\.getName|\\(%s\\)|\\\"\\(\\\"",
+        "paths": "mockito",
+        "glob": "*.java",
+        "output_mode": "files_with_matches",
+        "head_limit": 40
+      },
+      "result": "[grep-paths: 40 path(s) under mockito; grouped by directory]\n\nmockito/mockito-core/ (34 path(s))\n  src/main/java/org/mockito/ArgumentMatcher.java\n  src/main/java/org/mockito/ArgumentMatchers.java\n  src/main/java/org/mockito/MockSettings.java\n  src/main/java/org/mockito/Mockito.java\n  src/main/java/o [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/internal/matchers/ContainsExtraTypeInfo.java"
+      },
+      "result": "/*\n * Copyright (c) 2007 Mockito contributors\n * This program is made available under the terms of the MIT License.\n */\npackage org.mockito.internal.matchers;\n\n/**\n * Intended to use in certain ArgumentMatchers.\n * When ArgumentMatcher fails, chance is that the actual object has the same output of t [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/internal/matchers/text/ValuePrinter.java"
+      },
+      "result": "/*\n * Copyright (c) 2016 Mockito contributors\n * This program is made available under the terms of the MIT License.\n */\npackage org.mockito.internal.matchers.text;\n\nimport java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.Comparator;\nimport java.util.Iterator;\nimport java.util.List [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-n": true,
+        "-A": 6,
+        "output_mode": "content",
+        "paths": "mockito/mockito-core/src/main/java/org/mockito/internal/matchers/Equals.java",
+        "pattern": "toStringWithType|typeMatches"
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\matchers\\Equals.java:60:    public String toStringWithType(String className) {\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\matchers\\Equals.java-61-        return \"(\" + className + \") \" + describe(wanted);\nmockito\\mockito-core\\src\\ma [cut]",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 236, \"label\": \"enhancement\", \"route\": \"backlog\", \"related\": [716], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/matchers/ContainsExtraTypeInfo.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/matchers/Equals.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/matchers/text/ValuePrinter.java\"], \"reply\": \"Thanks for the report. You're asking that the type-hint output for typed arguments be changed so that String values are printed with quotes, for example (String) \\\"2\\\" instead of (String) 2, so the extra type information reads more clearly when matchers fail with equal toString() values. We'll consider this as a formatting change to how Mockito prints typed parameters.\"}",
+  "final_is_json": true
+}

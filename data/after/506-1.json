@@ -1,0 +1,76 @@
+{
+  "run": "506-1",
+  "number": 506,
+  "issue": {
+    "number": 506,
+    "title": "Improved exception message for wanted but not invoked",
+    "body": "Currently, Mockito prints following message when specific verification fails:\n\n```\nWanted but not invoked:\nmock.simpleMethod();\n-> at ....\n\nHowever, there were other interactions with this mock:\nmock.otherMethod();\n-> at ....\nmock.booleanReturningMethod();\n-> at ....\n```\n\nIt would be useful to print the number of invocations:\n\n```\nWanted but not invoked:\nmock.simpleMethod();\n-> at ....\n\nHowever, there were exactly 2 interactions with this mock:\nmock.otherMethod();\n-> at ....\nmock.booleanReturningMethod();\n-> at ....\n```\n",
+    "created_at": "2016-07-24T17:04:33Z"
+  },
+  "steps": [
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/506.json"
+      },
+      "result": "{\n  \"number\": 506,\n  \"title\": \"Improved exception message for wanted but not invoked\",\n  \"body\": \"Currently, Mockito prints following message when specific verification fails:\\n\\n```\\nWanted but not invoked:\\nmock.simpleMethod();\\n-> at ....\\n\\nHowever, there were other interactions with this mock:\\ [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "there were other interactions|Wanted but not invoked",
+        "paths": "mockito",
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "[grep content: 34 matches across 14 file(s) under mockito; delimited groups]\n\ndoc/release-notes/official.md:1032:  - [Bugfixes] Wanted but not invoked on 2.12.0, but not on 2.11.0 [(#1254)](https://github.com/mockito/mockito/issues/1254)\n\nmockito-core/src/test/java/org/mockitousage/verification/Veri [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)wanted but not invoked|other interactions|interactions? with|exception message|verification message",
+        "paths": "issue-index.tsv",
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "issue-index.tsv:20:90\tImprove exception messages when user mocks a method declared on non-public parent\nissue-index.tsv:260:506\tImproved exception message for wanted but not invoked\nissue-index.tsv:290:575\tIn javadocs and exception messages favor issue tracker over mailing list\nissue-index.tsv:323:6 [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-n": true,
+        "output_mode": "content",
+        "paths": "mockito/mockito-core/src/main/java/org/mockito/internal/exceptions/Reporter.java",
+        "pattern": "interaction|Wanted but not invoked|noMoreInteractions|getAllInvocations",
+        "-C": 3
+      },
+      "result": "[grep content: 15 matches across 1 file(s) under mockito/mockito-core/src/main/java/org/mockito/internal/exceptions; delimited groups]\n\nReporter.java (15 match(es)):\n  5- package org.mockito.internal.exceptions;\n  6- \n  7- import static org.mockito.internal.reporting.Pluralizer.pluralize;\n  8: impor [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-n": true,
+        "-A": 3,
+        "output_mode": "content",
+        "paths": "mockito/mockito-core/src/main/java/org/mockito/internal/reporting/Pluralizer.java",
+        "pattern": "were_exactly_x_interactions"
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\reporting\\Pluralizer.java:13:    public static String were_exactly_x_interactions(int x) {\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\reporting\\Pluralizer.java-14-        if (x == 1) {\nmockito\\mockito-core\\src\\main\\java\\org\\mockito [cut]",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 506, \"label\": \"enhancement\", \"route\": \"backlog\", \"related\": [], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/exceptions/Reporter.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/reporting/Pluralizer.java\"], \"reply\": \"Thanks for the suggestion. You asked for the \\\"Wanted but not invoked\\\" failure to state how many other interactions the mock received (for example, \\\"there were exactly 2 interactions with this mock\\\") so the count is visible at a glance. We have logged it as an enhancement request.\"}",
+  "final_is_json": true
+}

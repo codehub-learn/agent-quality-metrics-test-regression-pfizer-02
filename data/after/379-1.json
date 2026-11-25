@@ -1,0 +1,79 @@
+{
+  "run": "379-1",
+  "number": 379,
+  "issue": {
+    "number": 379,
+    "title": "Verification using After and ArgumentCaptor with Times or AtLeast methods returns unexpected size of captured values list.",
+    "body": "Hi!\nI was looking issue #345 and found that the test \"shouldReturnListOfArgumentsWithSameSizeAsGivenInAtMostVerification\" (located in VerificationAfterDelayTest.java) fails if you use atLeast() or times() instead of atMost().\nI created these tests:\n\n![screenshot from 2016-03-24 16 50 29](https://cloud.githubusercontent.com/assets/17257307/14034443/8a3d8b98-f1e0-11e5-856a-65dc20a4fa6b.png)\n",
+    "created_at": "2016-03-24T23:42:00Z"
+  },
+  "steps": [
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/379.json"
+      },
+      "result": "{\n  \"number\": 379,\n  \"title\": \"Verification using After and ArgumentCaptor with Times or AtLeast methods returns unexpected size of captured values list.\",\n  \"body\": \"Hi!\\nI was looking issue #345 and found that the test \\\"shouldReturnListOfArgumentsWithSameSizeAsGivenInAtMostVerification\\\" (located [cut]",
+      "error": false
+    },
+    {
+      "tool": "Glob",
+      "input": {
+        "pattern": "*",
+        "paths": [
+          ""
+        ]
+      },
+      "result": "[glob: 1272 path(s) under ; concrete paths]\nissue-index.tsv\nmockito/check_reproducibility.sh\nmockito/config/checkstyle/checkstyle.xsl\nmockito/config/javadoc/resources/favicon.ico\nmockito/config/javadoc/resources/mockito-theme.css\nmockito/config/jfr/jfr_config.jfc\nmockito/gradle/libs.versions.toml\nmo [cut]",
+      "error": false
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "repro-check"
+      },
+      "result": "Skill \"repro-check\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)after|captor|atLeast|times",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "[grep content: 77 matches across 1 file(s) under ; delimited groups]\n\nissue-index.tsv (77 match(es)):\n  10: 74\tArgumentCaptor supports var args\n  21: 91\tDocument Mockito.after() method\n  86: 188\tArgumentCaptor no longer working for varargs\n  94: 197\tMockito.after() method accepts negative timeperiod [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "class VerificationAfterDelay|shouldReturnListOfArgumentsWithSameSizeAsGivenInAtMostVerification|class AfterDelay|VerificationAfterDelay\\b",
+        "paths": [
+          "mockito/mockito-core/src/main/java"
+        ],
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\verification\\VerificationWithTimeout.java:18: * This is similar to {@link VerificationAfterDelay after()} except this assertion will immediately pass if it becomes true at any point,\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\verification\\Verificati [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/internal/verification/VerificationOverTimeImpl.java",
+        "view_range": [
+          20,
+          110
+        ]
+      },
+      "result": "    private final VerificationMode delegate;\n    private final boolean returnOnSuccess;\n    private final Timer timer;\n\n    /**\n     * Create this verification mode, to be used to verify invocation ongoing data later.\n     *\n     * @param pollingPeriodMillis The frequency to poll delegate.verify(),  [cut]",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 379, \"label\": \"bug\", \"route\": \"repro-check\", \"related\": [345], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/verification/VerificationOverTimeImpl.java\"], \"reply\": \"Thanks for the report. We could not reproduce it from the issue as written. The test code and the results are only in a screenshot, and the Mockito version is not stated. Please reply with: 1) the Mockito version and Java version; 2) the test code as text, not an image, including the after() call and the ArgumentCaptor use with times() or atLeast(); 3) the expected and actual size of the captured values list; 4) the full test output if it fails. The after() polling logic is in VerificationOverTimeImpl.\"}",
+  "final_is_json": true
+}

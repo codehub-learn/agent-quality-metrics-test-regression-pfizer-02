@@ -1,0 +1,98 @@
+{
+  "run": "796-1",
+  "number": 796,
+  "issue": {
+    "number": 796,
+    "title": "Mocking of package-private methods does not work if Thread's context ClassLoader is changed",
+    "body": "Here is the code to reproduce this issue:\n```java\npublic class TestWithCustomClassLoader {\n  public static void main(String[] args) {\n    // Thread.currentThread().setContextClassLoader(new MyClassLoader());\n    MyClass mock = org.mockito.Mockito.mock(MyClass.class);\n    System.out.println(mock.m1());\n    System.out.println(mock.m2());\n    System.out.println(mock.m3());\n    System.out.println(mock.m4());\n    System.out.println(mock.fm1());\n    System.out.println(mock.fm2());\n    System.out.println(mock.fm3());\n    System.out.println(mock.fm4());\n  }\n\n  public static class MyClassLoader extends ClassLoader {\n  }\n\n  public static class MyClass {\n    public Object m1() {\n      return 1;\n    }\n\n    Object m2() {\n      return 2;\n    }\n\n    protected Object m3() {\n      return 3;\n    }\n\n    private Object m4() {\n      return 4;\n    }\n\n    public final Object fm1() {\n      return 11;\n    }\n\n    final Object fm2() {\n      return 22;\n    }\n\n    protected final Object fm3() {\n      return 33;\n    }\n\n    private final Object fm4() {\n      return 44;\n    }\n  }\n}\n```\nWhen I ran this code as is I get the following expected output:\n```\nnull\nnull\nnull\n4\n11\n22\n33\n44\n```\nHowever when the line `// Thread.currentThread().setContextClassLoader(new MyClassLoader());` is uncommented it produces the following results:\n```\nnull\n2  <--- package-private method was NOT MOCKED\nnull\n4\n11\n22\n33\n44\n```\nThis seems to not work in Mockito 1.x and 2.x. Is this by design or a bug?",
+    "created_at": "2016-12-01T12:56:51Z"
+  },
+  "steps": [
+    {
+      "tool": "Bash",
+      "input": {
+        "command": "Get-Content -Raw issues\\796.json; Write-Output \"---\"; Get-Content issue-index.tsv | Select-String -Pattern \"mock|spy|stub|verify|argument|matcher\" | Select-Object -First 60",
+        "description": "Read issue 796 and search related index entries"
+      },
+      "result": "",
+      "error": true
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/796.json"
+      },
+      "result": "{\n  \"number\": 796,\n  \"title\": \"Mocking of package-private methods does not work if Thread's context ClassLoader is changed\",\n  \"body\": \"Here is the code to reproduce this issue:\\n```java\\npublic class TestWithCustomClassLoader {\\n  public static void main(String[] args) {\\n    // Thread.currentThrea [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "ContextClassLoader|isPackagePrivate|package-private|PackagePrivate",
+        "paths": [
+          "mockito"
+        ],
+        "output_mode": "content",
+        "-n": true,
+        "head_limit": 60
+      },
+      "result": "[grep content: 92 matches across 14 file(s) under mockito; delimited groups]\n\nmockito-integration-tests/module-tests/src/test/java/org/mockito/moduletest/ModuleAccessTest.java (6 match(es)):\n  37:         ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();\n  38:         Threa [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)classloader|package.private|package private|context class",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "issue-index.tsv:49:133\tMockito can't spy on object loaded in parent classloader\nissue-index.tsv:107:216\tMockito can't create mock on public class that extends package-private class\nissue-index.tsv:166:323\tMocking classes with package-private parent\nissue-index.tsv:414:796\tMocking of package-private  [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/main/java/org/mockito/internal/creation/bytebuddy/SubclassBytecodeGenerator.java",
+        "view_range": [
+          128,
+          160
+        ]
+      },
+      "result": "                        .appendMostSpecific(features.interfaces)\n                        .appendMostSpecific(\n                                MockAccess.class, DispatcherDefaultingToRealMethod.class)\n                        .appendMostSpecific(\n                                MockMethodInterceptor.c [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "mockito/mockito-core/src/test/java/org/mockitousage/bugs/creation/PackagePrivateWithContextClassLoaderTest.java",
+        "view_range": [
+          54,
+          70
+        ]
+      },
+      "result": "    @Before\n    public void setUp() {\n        oldContextClassloader = Thread.currentThread().getContextClassLoader();\n        Thread.currentThread().setContextClassLoader(new ClassLoader(oldContextClassloader) {});\n    }\n\n    @After\n    public void teardown() {\n        Thread.currentThread().setCont [cut]",
+      "error": false
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "repro-check"
+      },
+      "result": "Skill \"repro-check\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 796, \"label\": \"bug\", \"route\": \"repro-check\", \"related\": [2303, 2304, 133], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/creation/bytebuddy/SubclassBytecodeGenerator.java\", \"mockito/mockito-core/src/test/java/org/mockitousage/bugs/creation/PackagePrivateWithContextClassLoaderTest.java\"], \"reply\": \"Thanks for the report. The snippet, the expected output and the actual output are enough to reproduce this as written, so a maintainer can reproduce it. The context ClassLoader handling for mocks lives in SubclassBytecodeGenerator. The Mockito source also has a test for package-private mocking under a custom context ClassLoader (PackagePrivateWithContextClassLoaderTest), which you can compare against your setup. Please tell us which Mockito version you saw the failure on, since you mention 1.x and 2.x.\"}",
+  "final_is_json": true
+}

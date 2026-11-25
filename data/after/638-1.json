@@ -1,0 +1,90 @@
+{
+  "run": "638-1",
+  "number": 638,
+  "issue": {
+    "number": 638,
+    "title": "Could not initialize class org.mockito.internal.util.MockUtil\" - Maven , Mockito > 2.0.111-beta",
+    "body": "I get a \"java.lang.NoClassDefFoundError: **Could not initialize class org.mockito.internal.util.MockUtil\"** when running junit tests in maven (fine in Eclipse) and using a mockito version > 2.0.111-beta.\n\n**Environment**\n- Mockito - 2.1.0-RC.1 (issue started after 2.0.111-beta)\n- Maven - 3.3.9 (tests work in eclipse)\n- JUnit - 4.12 + MockitoJUnitRunner\n- JDK - 1.8.0_60-b27 \n\nHappy to help triage but don't know what more to share at the moment.\n",
+    "created_at": "2016-09-17T13:43:19Z"
+  },
+  "steps": [
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issues/638.json"
+      },
+      "result": "{\n  \"number\": 638,\n  \"title\": \"Could not initialize class org.mockito.internal.util.MockUtil\\\" - Maven , Mockito > 2.0.111-beta\",\n  \"body\": \"I get a \\\"java.lang.NoClassDefFoundError: **Could not initialize class org.mockito.internal.util.MockUtil\\\"** when running junit tests in maven (fine in Eclips [cut]",
+      "error": false
+    },
+    {
+      "tool": "Read",
+      "input": {
+        "path": "issue-index.tsv"
+      },
+      "result": "File too large to read at once (111.8 KB). Consider using the grep tool to search within the file, or view with view_range to read specific sections.",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "(?i)MockUtil|NoClassDefFound|Could not initialize|initialize class|class initializ|static init|ExceptionInInitializer|Mockito.*classloader|ClassLoader",
+        "paths": [
+          "issue-index.tsv"
+        ],
+        "-i": true,
+        "output_mode": "content",
+        "-n": true
+      },
+      "result": "[grep content: 43 matches across 1 file(s) under ; delimited groups]\n\nissue-index.tsv (43 match(es)):\n  7: 71\tjava.lang.NoClassDefFoundError: org.mockito.internal.runners.RunnerImpl on ART on L Preview on Android\n  45: 127\tWhen trying to mock a non final class, get java.lang.NoClassDefFoundError: co [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "pattern": "class MockUtil|class MockingProgressImpl|class ThreadSafeMockingProgress",
+        "paths": [
+          "mockito"
+        ],
+        "output_mode": "files_with_matches"
+      },
+      "result": "mockito\\mockito-core\\src\\test\\java\\org\\mockito\\internal\\util\\MockUtilTest.java\nmockito\\mockito-core\\src\\test\\java\\org\\mockito\\internal\\progress\\ThreadSafeMockingProgressTest.java\nmockito\\mockito-core\\src\\test\\java\\org\\mockito\\internal\\progress\\MockingProgressImplTest.java\nmockito\\mockito-core\\src\\ma [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "output_mode": "content",
+        "-n": true,
+        "paths": [
+          "mockito/mockito-core/src/main/java/org/mockito/internal/util/MockUtil.java"
+        ],
+        "pattern": "static|class MockUtil|public static"
+      },
+      "result": "[grep content: 23 matches across 1 file(s) under mockito/mockito-core/src/main/java/org/mockito/internal/util; delimited groups]\n\nMockUtil.java (23 match(es)):\n  27: import static org.mockito.internal.handler.MockHandlerFactory.createMockHandler;\n  30: public class MockUtil {\n  32:     private stati [cut]",
+      "error": false
+    },
+    {
+      "tool": "Grep",
+      "input": {
+        "-n": true,
+        "output_mode": "content",
+        "paths": [
+          "mockito/mockito-core/src/main/java/org/mockito/internal/configuration/plugins/Plugins.java"
+        ],
+        "pattern": "public static MockMaker getMockMaker|class Plugins"
+      },
+      "result": "mockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\configuration\\plugins\\Plugins.java:25:public final class Plugins {\nmockito\\mockito-core\\src\\main\\java\\org\\mockito\\internal\\configuration\\plugins\\Plugins.java:42:    public static MockMaker getMockMaker() {",
+      "error": false
+    },
+    {
+      "tool": "Skill",
+      "input": {
+        "skill": "repro-check"
+      },
+      "result": "Skill \"repro-check\" loaded successfully. Follow the instructions in the skill context.",
+      "error": false
+    }
+  ],
+  "final": "{\"number\": 638, \"label\": \"bug\", \"route\": \"repro-check\", \"related\": [2568, 2025], \"evidence\": [\"mockito/mockito-core/src/main/java/org/mockito/internal/util/MockUtil.java\", \"mockito/mockito-core/src/main/java/org/mockito/internal/configuration/plugins/Plugins.java\"], \"reply\": \"Thanks for the report. The NoClassDefFoundError comes from the static initializer of org.mockito.internal.util.MockUtil, which calls Plugins.getMockMaker(). This error usually follows an earlier failure during that class initialization. The report does not include a code snippet or test, and the stack trace only shows the NoClassDefFoundError. To reproduce it, please share: 1) the first exception in the Maven log, including any ExceptionInInitializerError or 'Caused by' lines; 2) a test class or minimal snippet that triggers the error; 3) the Mockito version Maven actually resolves (for example, from mvn dependency:tree), plus any mockito-extensions or mock maker configuration.\"}",
+  "final_is_json": true
+}
